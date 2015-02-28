@@ -49,13 +49,16 @@ function hyphenToCamel (hyphen) {
  * @param  options.fonts                    A list of font-family names or sets of CSS style parameters
  * @param [options.elements=".ftw"]         A CSS selector or jQuery object specifying which elements should apply FTW
  * @param [options.minLetterSpace=-0.04]    A very small, probably negative number indicating degree of allowed tightening
+ * @param [options.minFontSize=1.0]         Allow scaling of font-size to this ratio of original
+ * @param [options.maxFontSize=1.0]         Allow scaling of font-size to this ratio of original
+ * @param [options.preferredFit="tight"]    Whether to prefer "tight" or "loose" letterspacing
+ * @param [options.preferredSize="large"]   Whether to prefer "large" or "small" font-size
  */
  
 var FontToWidth = function(options) {
 
     // in case we were not called with "new"
     if (!(this instanceof FontToWidth)) {
-        console.log("shame");
         return new FontToWidth(options);
     }
 
@@ -80,6 +83,8 @@ var FontToWidth = function(options) {
     options.minLetterSpace = typeof options.minLetterSpace === "number" ? options.minLetterSpace : -0.04;
     options.minFontSize = options.minFontSize || 1.0;
     options.maxFontSize = options.maxFontSize || 1.0;
+    options.preferredFit = options.preferredFit || "tight";
+    options.preferredFit = options.preferredSize || "large";
 
     this.measuringText = 'AVAWJ wimper QUILT jousting';
     this.initialized = false;
@@ -91,7 +96,7 @@ var FontToWidth = function(options) {
     this.allTheElements.each(function() {
         var el = $(this);
         el.css('white-space', 'nowrap');
-        el.data('original-style', el.attr('style'));
+        el.data('ftw-original-style', el.attr('style'));
         el.wrapInner("<span contenteditable='false'></span>");
     });
 
@@ -232,11 +237,13 @@ FontToWidth.prototype.updateWidths = function() {
     
     if (!ftw.ready) return;
     
+    ftw.options.avgFontSize = (ftw.options.maxFontSize + ftw.options.minFontSize)/2;
+    
     var starttime = Date.now();
     
     ftw.ready = false;
 
-    ftw.stillToDo = $(ftw.allTheElements).removeClass('ftw_done ftw_final');
+    ftw.stillToDo = $(ftw.allTheElements).removeClass('ftw_done ftw_final ftw_onemore');
 
     //doing this in waves is much faster, since we update all the fonts at once, then do only one repaint per font
     // as opposed to one repaint for every element
@@ -244,28 +251,66 @@ FontToWidth.prototype.updateWidths = function() {
     var updateSingleWidth = function(i, el) {
         var cell = $(el);
         var span = cell.children('span');
-    
+
+        var ontrial = cell.hasClass('ftw_onemore');
+        var success = false;
+
         var fullwidth = cell.width();
         var textwidth = span.outerWidth();
         var lettercount = span.text().length-1; //this will probably get confused with fancy unicode text
         var fontsize = parseFloat(cell.css('font-size'));
-    
+
+        //if this is a borderline fit
+        var onemore = false;
+
         //first try nudging the font size
-        var newfontsize, ratioToFit = fullwidth/textwidth;
-        if (ratioToFit >= ftw.options.minFontSize) {
+        var newfontsize=fontsize, oldfontsize=fontsize, ratioToFit = fullwidth/textwidth;
+        
+        //for the widest font, we can max out the size
+        if (i==0 && ratioToFit > ftw.options.maxFontSize) {
+            ratioToFit = ftw.options.maxFontSize;
+        }
+        
+        if (ratioToFit != 1 && ratioToFit >= ftw.options.minFontSize && ratioToFit <= ftw.options.maxFontSize) {
             //adjust the font size and then nudge letterspacing on top of that
-            newfontsize = Math.round(fontsize * Math.min(ratioToFit, ftw.options.maxFontSize));
+            newfontsize = Math.round(fontsize * ratioToFit);
             cell.css('font-size', newfontsize + 'px');
             textwidth *= newfontsize/fontsize;
             fontsize = newfontsize;
+
+            if (ratioToFit < ftw.options.avgFontSize) {
+                if (ftw.options.preferredSize=="small") {
+                    success = true;
+                } else {
+                    onemore = true;
+                }
+            } else {
+                //if it grew we have to stop
+                success = true;
+            }
         }
     
         var letterspace = (fullwidth-textwidth)/lettercount/fontsize;
-    
-        if (letterspace >= ftw.options.minLetterSpace || newfontsize || cell.hasClass('ftw_final')) {
+
+        if (letterspace >= ftw.options.minLetterSpace || newfontsize != oldfontsize || cell.hasClass('ftw_final')) {
             //adjust letter spacing to fill the width
             cell.css('letter-spacing', Math.max(letterspace, ftw.options.minLetterSpace) + 'em');
-            
+
+            if (letterspace < 0) {
+                if (ftw.options.preferredFit=="tight") {
+                    success = true;
+                } else {
+                    onemore = true;
+                }
+            } else {
+                //if it expanded we have to stop
+                success = true;
+            }
+        }
+        
+        if (onemore) {
+            cell.addClass('ftw_onemore');
+        } else if (ontrial || success) {
             cell.addClass('ftw_done');
         }
     };
@@ -276,7 +321,7 @@ FontToWidth.prototype.updateWidths = function() {
         //first go through and update all the css without reading anything
         ftw.stillToDo.each(function() { 
             var el = $(this);
-            el.attr('style', el.data('original-style'));
+            el.attr('style', el.data('ftw-original-style'));
             el.css(font);
         })
         // and then start measuring
