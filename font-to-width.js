@@ -19,9 +19,29 @@
  *
  */
 
-
 ;(function() {
 'use strict';
+
+function hyphenToCamel (hyphen) {
+    switch (typeof hyphen) {
+    case "object":
+        $.each(hyphen, function(key, val) {
+            var newKey = hyphenToCamel(key);
+            if (key != newKey) {
+                hyphen[newKey] = val;
+                delete hyphen[key];
+            }
+        });
+        return hyphen;
+    
+    case "string":
+        return hyphen.replace(/-([a-z])/g, function(x, letter) { return letter.toUpperCase() });
+    
+    default:
+        return hyphen;
+    }
+}
+
 
 /**
  * @param  options
@@ -30,40 +50,43 @@
  * @param [options.minLetterSpace=-0.04]    A very small, probably negative number indicating degree of allowed tightening
  */
  
-window.FontToWidth = function(options) {
+var FontToWidth = function(options) {
 
-    //clean up hypenated names: min-letter space => minLetterSpace
-    $.each(options, function(key, val) {
-        var newKey = key.replace(/-([a-z])/g, function(x, letter) { return letter.toUpperCase() });
-        if (key != newKey) {
-            options[newKey] = val;
-            delete options[key];
-        }
-    });
-    
-    if (!options.fonts) return;
-    if (!options.elements) {
-        options.elements = '.ftw, .font-to-width, .fonttowidth';
+    // in case we were not called with "new"
+    if (!(this instanceof FontToWidth)) {
+        console.log("shame");
+        return new FontToWidth(options);
     }
 
-    options['minLetterSpace'] = options['minLetterSpace'] || -0.04;
+    if (!options.fonts) {
+        throw "Missing required options 'fonts'";
+    }
 
-    console.log(options);
+    //fill out fonts CSS with default settings
+    $.each(options.fonts, function(i, font) {
+        if (typeof font == "string") {
+            options.fonts[i] = font = { fontFamily: font };
+        }
+        hyphenToCamel(font);
+        font.fontWeight = font.fontWeight || 'normal';
+        font.fontStyle = font.fontStyle || 'normal';
+        if (font.fontSize) delete font.fontSize;
+    });
 
-    if (!options.fonts || !options.elements)
-        throw "Missing required options 'fonts' and 'elements'.";
+    options.elements = options.elements || '.ftw, .font-to-width, .fonttowidth';
+    options.minLetterSpace = options.minLetterSpace || -0.04;
 
     this.initialized = false;
     this.integerLetterSpacing = false;
     this.ready = false;
     this.options = options;
-    this.fontwidths = {};
+    this.fontwidths = new Array(options.fonts.length);
     this.allTheElements = $(options.elements);
 
-    this.allTheElements.contents().wrap("<span contenteditable='false'></span>");
+    this.allTheElements.wrapInner("<span contenteditable='false'></span>");
 
     $($.proxy(this.measureFonts,this)); 
-}
+};
 
 FontToWidth.prototype.addGoogleWebfontLoader = function() {
     var found = false;
@@ -77,107 +100,115 @@ FontToWidth.prototype.addGoogleWebfontLoader = function() {
     if (!found) {
         $('head').append("<script src='//ajax.googleapis.com/ajax/libs/webfont/1.5.2/webfont.js'></script>");
     }
-}
+};
 
 FontToWidth.prototype.measureFonts = function() {
-    var widther = this;
-    widther.ready = false;
+    var ftw = this;
+    ftw.ready = false;
 
     //create a hidden element to measure the relative widths of all the fonts
-    var div = widther.measure_div = $("<div style='position:absolute;top:0px;right:101%;display:block;'></div>");
-    div.append("<div id='measure_letter_spacing' style='letter-spacing:0.4px'></div>");
-    //div.append("<div style='position:fixed;top:0;right:0;bottom:0;left:0;background-color:rgba(16,16,16,0.9);color:white;font-size:32px;text-align:center;padding-top:40%;'>Loading fonts&hellip;</div>");
-    var weights = [];
+    var div = ftw.measure_div = $("<div style='position:absolute;top:0px;display:block;'></div>");
+    div.append("<div id='ftw_measure_letter_spacing' style='letter-spacing:0.4px'></div>");
 
-    //take into account different font-weight values that might be used by various elements
-    this.allTheElements.each(function() {
-        var w = $(this).css('font-weight');
-        if (w && $.inArray(w,weights) < 0) {
-            weights.push(w);
-        }
+    $.each(ftw.options.fonts, function(i, font) {
+        var span = $('<span>AVAWJMI LT wi mj</span>');
+        span.css({
+            'font-size': '36px',
+            'display': 'inline',
+        });
+        span.css(font);
+        
+        div.append(span);
+        div.append("<br>");
     });
-
-    var i, j;
-    for (i in this.options.fonts) {
-        for (j in weights) {
-            div.append("<span style='font-family:\"" + this.options.fonts[i] + "\";font-weight:" + weights[j] + ";font-size:36px;display:inline;outline:1px solid red;'>AVAWJMILTwimj</span><br>");
-        }
-    }
+    
     $('body').append(div);
 
     //see if browser support subpixel letter-spacing
-    widther.integerLetterSpacing = (parseFloat($('#measure_letter_spacing').css('letter-spacing')) == 0);
+    ftw.integerLetterSpacing = (parseFloat($('#ftw_measure_letter_spacing').css('letter-spacing')) == 0);
 
     //keep re-measuring the widths until they're all different, on the assumption that same-width means the font hasn't loaded yet.
     // this assumes that all the fonts actually are different widths
     var tries = 60;
+    var spans = ftw.measure_div.children('span');
     var measurefunc = function() {
 
         if (--tries < 0) {
             console.log("Giving up!");
-            clearInterval(widther.measuretimeout);
+            clearInterval(ftw.measuretimeout);
             return;
         }
 
-        widther.measure_div.children('span').each(function() {
+        spans.each(function(i) {
             var span = $(this);
-            widther.fontwidths[span.css('font-family').replace(/['"]/g,'')] = span.width();
+            ftw.fontwidths[i] = span.width();
         });
 
-        console.log("Measured", Date.now()/1000, widther.fontwidths);
+        console.log("Measured", Date.now()/1000, ftw.fontwidths);
         
         var i, mywidth, uniquewidths = [], alldifferent = true;
-        for (i in widther.options.fonts) {
-            mywidth = widther.fontwidths[widther.options.fonts[i]];
+        $.each(ftw.fontwidths, function(i, mywidth) {
             if ($.inArray(mywidth,uniquewidths) >= 0) {
                 alldifferent = false;
-                break;
+                return false;
             }
             uniquewidths.push(mywidth);
-        }
+        });
 
         if (alldifferent) {
-            widther.ready = true;
-            clearInterval(widther.measuretimeout);
+            ftw.ready = true;
+            clearInterval(ftw.measuretimeout);
 
             //sort the font list widest first
-            widther.options.fonts.sort(function(b,a) { 
-                if (widther.fontwidths[a] < widther.fontwidths[b])
+            var font2width = new Array(ftw.options.fonts.length);
+            $.each(ftw.fontwidths, function(i, mywidth) {
+                font2width[i] = {index: i, width: mywidth};
+            });
+            
+            font2width.sort(function(b,a) { 
+                if (a.width < b.width)
                     return -1;
-                if (widther.fontwidths[a] > widther.fontwidths[b])
+                if (a.width > b.width)
                     return 1;
                 return 0;
             });
+            
+            var newfonts = new Array(font2width.length);
+            $.each(font2width, function(i, font) {
+                newfonts[i] = ftw.options.fonts[font.index];
+            });
+            
+            ftw.options.fonts = newfonts;
 
-            widther.measure_div.remove();
+            ftw.measure_div.remove();
 
-            widther.startTheBallRolling();
+            ftw.startTheBallRolling();
         }
         
     };
     
-    widther.measuretimeout = setInterval(measurefunc, 500);
+    ftw.measuretimeout = setInterval(measurefunc, 500);
     measurefunc();
-}
+};
 
 FontToWidth.prototype.startTheBallRolling = function() {
-    var widther = this;
+    var ftw = this;
 
     //only do this stuff once
-    if (widther.initialized)
+    if (ftw.initialized)
         return;
         
-    widther.initialized = true;
+    ftw.initialized = true;
     
     //add space spans for integer-pixel browsers
-    if (widther.integerLetterSpacing) {
-        this.allTheElements.children('span').each(function() {
+    if (ftw.integerLetterSpacing) {
+        ftw.allTheElements.children('span').each(function() {
             var span = $(this);
             span.html(span.text().replace(/ /g, "<span style='display:inline-block'>&nbsp;</span>"));
         });
     }
     
-    var updatewidths = $.proxy(widther.updateWidths, widther);
+    var updatewidths = $.proxy(ftw.updateWidths, ftw);
     
     //update widths right now
     $(updatewidths);
@@ -192,68 +223,67 @@ FontToWidth.prototype.startTheBallRolling = function() {
 
     //update on live text change
     /*
-    widther.allTheElements.on('keyup',function() {
+    ftw.allTheElements.on('keyup',function() {
         //similar to updateWidths() below, but different enough to implement separately
         var cell = $(this);
-        cell.removeClass('done');
+        cell.removeClass('ftw_done');
         
-        if (widther.integerLetterSpacing)
+        if (ftw.integerLetterSpacing)
             cell.find('span span').css('width','');
         
         var i, fontfamily;
-        for (i in widther.options.fonts) { 
-            fontfamily = widther.options.fonts[i];
+        for (i in ftw.options.fonts) { 
+            fontfamily = ftw.options.fonts[i];
     
             cell.css({'font-family': fontfamily, 'letter-spacing': ''});
-            cell.each(widther.updateSingleWidth);
-            if (cell.hasClass('done')) {
+            cell.each(ftw.updateSingleWidth);
+            if (cell.hasClass('ftw_done')) {
                 break;
             }
         }
     });
     */
-}
+};
 
 FontToWidth.prototype.resetFont = function(el,font) {
-    $(el).css({'font-family': font || this.options.fonts[0], 'letter-spacing': ''});
-}
+    $(el).css({'font-family': font || this.options.fonts[0].fontFamily, 'letter-spacing': ''});
+};
 
 FontToWidth.prototype.updateWidths = function() {
-    if (!this.ready) return;
+    var ftw = this;
     
-    this.ready = false;
+    if (!ftw.ready) return;
+    
+    ftw.ready = false;
 
-    this.stillToDo = this.allTheElements;
-    this.stillToDo.removeClass('done');
+    ftw.stillToDo = $(ftw.allTheElements).removeClass('ftw_done');
 
-    if (this.integerLetterSpacing)
-        this.stillToDo.find('span span').css('width','');
+    if (ftw.integerLetterSpacing)
+        ftw.stillToDo.find('> span > span').css('width','');
 
     //doing this in waves is much faster, since we update all the fonts at once, then do only one repaint per font
     // as opposed to one repaint for every element
     
-    //this.fonts is sorted widest first; once we get to a font that fits, we remove that element from the list
-    var i, fontfamily;
-    var updateSingleWidthBound = $.proxy(this.updateSingleWidth,this);
-    for (i in this.options.fonts) { 
-        var fontfamily = this.options.fonts[i];
-
-        this.stillToDo.css({'font-family': fontfamily, 'letter-spacing': ''});
-        this.stillToDo.each(updateSingleWidthBound);
+    //ftw.fonts is sorted widest first; once we get to a font that fits, we remove that element from the list
+    var updateSingleWidthBound = $.proxy(ftw.updateSingleWidth,ftw);
+    $.each(ftw.options.fonts, function(i, font) { 
+        ftw.stillToDo.css(font).css('letter-spacing', '');
+        ftw.stillToDo.each(updateSingleWidthBound);
         
-        this.stillToDo = this.stillToDo.not('.done');
+        ftw.stillToDo = ftw.stillToDo.not('.ftw_done');
         
-        console.log(fontfamily, this.stillToDo.length + " left.");
+        console.log(font, ftw.stillToDo.length + " left.");
         
-        if (!this.stillToDo.length) {
-            break;
+        if (!ftw.stillToDo.length) {
+            return false;
         }
-    }
+    });
     
-    this.ready = true;
-}
+    ftw.ready = true;
+};
 
 FontToWidth.prototype.updateSingleWidth = function(i,el) {
+    var ftw = this;
     var cell = $(el);
     var span = cell.children('span');
 
@@ -265,14 +295,12 @@ FontToWidth.prototype.updateSingleWidth = function(i,el) {
     var letterspace = (fullwidth-textwidth)/lettercount/fontsize;
     var spaces, spacewidth;
 
-    if (letterspace >= this.options['minLetterSpace']) {
-        cell.addClass('done');
-        
+    if (letterspace >= ftw.options.minLetterSpace) {
         //adjust letter spacing to fill the width
         cell.css('letter-spacing', letterspace + 'em');
         
         //deal with browsers (SAFARI) that only do integer-pixel letterspacing
-        if (this.integerLetterSpacing) {
+        if (ftw.integerLetterSpacing) {
             //pump up the word space to fit the width as exactly as possible
             spaces = span.children('span');
             if (spaces.length) {
@@ -282,11 +310,15 @@ FontToWidth.prototype.updateSingleWidth = function(i,el) {
                 spaces.width(spacewidth);
             }
         }
+
+        cell.addClass('ftw_done');
     }
-}
+};
 
 
 
 //FontToWidth.prototype.addGoogleWebfontLoader(); //do this ASAP
+
+window.FontToWidth = FontToWidth;
 
 })();
