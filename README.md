@@ -1,28 +1,37 @@
-# Font-to-Width
+# Font-To-Width FTW
 
 Font-To-Width if a small Javascript routine which fits text to the width of an element 
-using multiple font families of different widths.
+using multiple font styles of different widths.
 
-© 2014 [Chris Lewis] and [Nick Sherman]
+© 2014–2015 [Chris Lewis] and [Nick Sherman]
 
 Freely made available under the MIT license: http://opensource.org/licenses/MIT
 
 ### Usage
 
-	<element>Text To Fit</element>
+	<div class="ftw">Text To Fit</div>
 	<script> 
 		new FontToWidth({
-			fonts: ["List","of","font","families"], 
-			elements: "CSS selector for elements"
+			fonts: [
+				'Font Family Name String',
+				{ fontFamily: 'Complete CSS Spec', fontWeight: 'normal', fontStyle: 'italic' },
+				…
+			];
+			elements: ".ftw, .css-selector-or-jQuery-object"
 		}); 
 	</script>
 
 ### Notes
 
 * Multiple FontToWidth instances can be created using different font lists and elements.
-* Element can be any block or inline-block element.
+* Elements can be anything that is display:block or inline-block
 
 ### History
+
+* 2015-02-28
+ * Added ability to specify complete CSS spec for each font style
+ * Support hyphenated-type or camelCaseType options
+ * Bugfixes and safer coding style
 
 * 2014-03-31 **Initial release**
  * Only option is 'min-letter-space'
