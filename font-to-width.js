@@ -63,6 +63,8 @@ var FontToWidth = function(options) {
         throw "Missing required options 'fonts'";
     }
 
+    //OPTIONS 
+    
     //fill out fonts CSS with default settings
     $.each(options.fonts, function(i, font) {
         if (typeof font == "string") {
@@ -75,7 +77,9 @@ var FontToWidth = function(options) {
     });
 
     options.elements = options.elements || '.ftw, .font-to-width, .fonttowidth';
-    options.minLetterSpace = options.minLetterSpace || -0.04;
+    options.minLetterSpace = typeof options.minLetterSpace === "number" ? options.minLetterSpace : -0.04;
+    options.minFontSize = options.minFontSize || 1.0;
+    options.maxFontSize = options.maxFontSize || 1.0;
 
     this.measuringText = 'AVAWJ wimper QUILT jousting';
     this.initialized = false;
@@ -85,7 +89,12 @@ var FontToWidth = function(options) {
     this.fontwidths = new Array(options.fonts.length);
     this.allTheElements = $(options.elements);
 
-    this.allTheElements.css('white-space', 'nowrap').wrapInner("<span contenteditable='false'></span>");
+    this.allTheElements.each(function() {
+        var el = $(this);
+        el.css('white-space', 'nowrap');
+        el.data('original-style', el.attr('style'));
+        el.wrapInner("<span contenteditable='false'></span>");
+    });
 
     $($.proxy(this.measureFonts,this)); 
 };
@@ -113,7 +122,8 @@ FontToWidth.prototype.measureFonts = function() {
     $('body').append(div);
 
     //see if browser support subpixel letter-spacing
-    ftw.integerLetterSpacing = (parseFloat($('#ftw_measure_letter_spacing').css('letter-spacing')) == 0);
+    // TODO see if this is really necessary
+    //ftw.integerLetterSpacing = (parseFloat($('#ftw_measure_letter_spacing').css('letter-spacing')) == 0);
 
     //keep re-measuring the widths until they're all different, on the assumption that same-width means the font hasn't loaded yet.
     // this assumes that all the fonts actually are different widths
@@ -192,7 +202,7 @@ FontToWidth.prototype.startTheBallRolling = function() {
     if (ftw.integerLetterSpacing) {
         ftw.allTheElements.children('span').each(function() {
             var span = $(this);
-            span.html(span.text().replace(/ /g, "<span style='display:inline-block'>&nbsp;</span>"));
+            span.html(span.text().replace(/ /g, "<span style='display:inline-block' class='ftw_space'>&nbsp;</span>"));
         });
     }
     
@@ -242,64 +252,80 @@ FontToWidth.prototype.updateWidths = function() {
 
     ftw.stillToDo = $(ftw.allTheElements).removeClass('ftw_done ftw_final');
 
-    if (ftw.integerLetterSpacing)
-        ftw.stillToDo.find('> span > span').css('width','');
+    if (ftw.integerLetterSpacing) {
+        ftw.stillToDo.find('span.ftw_space').css('width','');
+    }
 
     //doing this in waves is much faster, since we update all the fonts at once, then do only one repaint per font
     // as opposed to one repaint for every element
+
+    var updateSingleWidth = function(i, el) {
+        var cell = $(el);
+        var span = cell.children('span');
+    
+        var fullwidth = cell.width();
+        var textwidth = span.outerWidth();
+        var lettercount = span.text().length-1; //this will probably get confused with fancy unicode text
+        var fontsize = parseFloat(cell.css('font-size'));
+    
+        //first try nudging the font size
+        var newfontsize, ratioToFit = fullwidth/textwidth;
+        if (ratioToFit >= ftw.options.minFontSize) {
+            //adjust the font size and then nudge letterspacing on top of that
+            newfontsize = Math.round(fontsize * Math.min(ratioToFit, ftw.options.maxFontSize));
+            cell.css('font-size', newfontsize + 'px');
+            textwidth *= newfontsize/fontsize;
+            fontsize = newfontsize;
+        }
+    
+        var letterspace = (fullwidth-textwidth)/lettercount/fontsize;
+    
+        if (letterspace >= ftw.options.minLetterSpace || newfontsize || cell.hasClass('ftw_final')) {
+            //adjust letter spacing to fill the width
+            cell.css('letter-spacing', Math.max(letterspace, ftw.options.minLetterSpace) + 'em');
+            
+            //deal with browsers (SAFARI) that only do integer-pixel letterspacing
+            if (ftw.integerLetterSpacing) {
+                //pump up the word space to fit the width as exactly as possible
+                var spaces = span.children('span');
+                if (spaces.length) {
+                    spaces.width(0); //measure with no spaces at all
+                    var spacewidth = (fullwidth-span.outerWidth())/spaces.length;
+                    //console.log("GOING THE DISTANCE", span.text(), span.outerWidth(), fullwidth, spacewidth);
+                    if (spacewidth > 0) {
+                        spaces.width(spacewidth);
+                    }
+                }
+            }
+    
+            cell.addClass('ftw_done');
+        }
+    };
+    
     
     //ftw.fonts is sorted widest first; once we get to a font that fits, we remove that element from the list
-    var updateSingleWidthBound = $.proxy(ftw.updateSingleWidth,ftw);
     $.each(ftw.options.fonts, function(i, font) { 
-        ftw.stillToDo.css(font).css('letter-spacing', '');
-        ftw.stillToDo.each(updateSingleWidthBound);
+        //first go through and update all the css without reading anything
+        ftw.stillToDo.each(function() { 
+            var el = $(this);
+            el.attr('style', el.data('original-style'));
+            el.css(font);
+        })
+        // and then start measuring
+        .each(updateSingleWidth);
         
         ftw.stillToDo = ftw.stillToDo.not('.ftw_done');
         
-        console.log(font, ftw.stillToDo.length + " left.");
+        //console.log(font, ftw.stillToDo.length + " left.");
         
         if (!ftw.stillToDo.length) {
             return false;
         }
     });
     
-    ftw.stillToDo.addClass('ftw_final').each(updateSingleWidthBound);
+    ftw.stillToDo.addClass('ftw_final').each(updateSingleWidth);
     
     ftw.ready = true;
-};
-
-FontToWidth.prototype.updateSingleWidth = function(i,el) {
-    var ftw = this;
-    var cell = $(el);
-    var span = cell.children('span');
-
-    var fullwidth = cell.width();
-    var textwidth = span.outerWidth();
-    var lettercount = span.text().length-1; //this will probably get confused with fancy unicode text
-    var fontsize = parseFloat(cell.css('font-size'));
-
-    var letterspace = (fullwidth-textwidth)/lettercount/fontsize;
-
-    if (letterspace >= ftw.options.minLetterSpace || cell.hasClass('ftw_final')) {
-        //adjust letter spacing to fill the width
-        cell.css('letter-spacing', Math.max(letterspace, ftw.options.minLetterSpace) + 'em');
-        
-        //deal with browsers (SAFARI) that only do integer-pixel letterspacing
-        if (ftw.integerLetterSpacing) {
-            //pump up the word space to fit the width as exactly as possible
-            var spaces = span.children('span');
-            if (spaces.length) {
-                spaces.width(0); //measure with no spaces at all
-                var spacewidth = (fullwidth-span.outerWidth())/spaces.length;
-                //console.log("GOING THE DISTANCE", span.text(), span.outerWidth(), fullwidth, spacewidth);
-                if (spacewidth > 0) {
-                    spaces.width(spacewidth);
-                }
-            }
-        }
-
-        cell.addClass('ftw_done');
-    }
 };
 
 window.FontToWidth = FontToWidth;
