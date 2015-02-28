@@ -20,6 +20,8 @@
  */
 
 
+;(function() {
+'use strict';
 
 /**
  * @param  options
@@ -28,7 +30,7 @@
  * @param [options.minLetterSpace=-0.04]    A very small, probably negative number indicating degree of allowed tightening
  */
  
-function FontToWidth(options) {
+window.FontToWidth = function(options) {
 
     //clean up hypenated names: min-letter space => minLetterSpace
     $.each(options, function(key, val) {
@@ -286,3 +288,5 @@ FontToWidth.prototype.updateSingleWidth = function(i,el) {
 
 
 //FontToWidth.prototype.addGoogleWebfontLoader(); //do this ASAP
+
+})();
