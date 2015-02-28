@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Font-To-Width Demo</title>
+		<!-- A set of Google Fonts in various widths -->
+		<link href='http://fonts.googleapis.com/css?family=Arvo:700|Wire+One|Bitter|Holtwood+One+SC|Ubuntu+Condensed|Krona+One|Dorsa|Yanone+Kaffeesatz:700,300,400,200|Six+Caps|Roboto+Condensed' rel='stylesheet' type='text/css'>		
+		<style>
+			body {
+				font-size: 16px;
+				margin: 1em;
+				background-color: white;
+				font-family: Verdana, sans-serif;
+			}
+			label {
+    			display: inline-block;
+            }
+            label + label {
+                margin-left: 2em;
+            }
+			fieldset {
+    			display: inline-block;
+            }
+                        
+            fieldset label {
+                display: inline;
+            }
+            
+			ul, li {
+				list-style: none;
+				margin: 0.1em 0;
+				padding: 0;
+			}
+			li {
+    			font-size: 72px;
+            }
+		</style>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+		<script src="//font-to-width.com/font-to-width/font-to-width.js"></script>
+		<script>
+			var fonts = [
+				{ fontFamily: 'Arvo', 'font-weight': 700 },
+				'Wire One',
+				'Bitter',
+				'Holtwood One SC',
+				'Ubuntu Condensed',
+				'Krona One',
+				'Dorsa',
+				{ fontFamily: 'Yanone Kaffeesatz', 'font-weight': 700 },
+				{ fontFamily: 'Yanone Kaffeesatz', 'font-weight': 300 },
+				{ fontFamily: 'Yanone Kaffeesatz', 'font-weight': 400 },
+				{ fontFamily: 'Yanone Kaffeesatz', 'font-weight': 200 },
+				{ fontFamily: 'Six Caps' },
+				{ fontFamily: 'Roboto Condensed' },
+			];
+		</script>
+	</head>
+	<body>
+            <form>
+                <label>Allow shrink <input type='range' name='minFontSize' min='0.5' max='1.0' step='0.01' value='1.0'></label>
+                <label>Allow grow <input type='range' name='maxFontSize' min='1.0' max='2.0' step='0.02' value='1.0'></label>
+                <br>
+                <fieldset>
+                    <legend>Preferred fit</legend>
+                    <label><input type='radio' name='preferredFit' value='tight' checked> Tight</label>
+                    <label><input type='radio' name='preferredFit' value='loose'> Loose</label>
+                </fieldset>
+                <fieldset>
+                    <legend>Preferred Size</legend>
+                    <label><input type='radio' name='preferredSize' value='large' checked> Large</label>
+                    <label><input type='radio' name='preferredSize' value='small'> Small</label>
+                </fieldset>
+            </form>
+    		<ul>
+            <li>Four</li>
+            <li>Four score</li>
+            <li>Four score and</li>
+            <li>Four score and seven</li>
+            <li>Four score and seven years</li>
+            <li>Four score and seven years ago</li>
+            <li>Four score and seven years ago, our</li>
+            <li>Four score and seven years ago, our fathers</li>
+            <li>Four score and seven years ago, our fathers brought</li>
+            <li>Four score and seven years ago, our fathers brought forth</li>
+		</ul>
+		
+		<script>
+    		var ftw = new FontToWidth({
+        		elements:'li', 
+        		fonts: fonts,
+            });
+            
+            var remix = function() {
+                $.each($('form').serializeArray(), function(i, item) {
+                    ftw.options[item.name] = parseFloat(item.value) || item.value;
+                });
+                ftw.updateWidths();
+            };
+            
+            $('input').on('change', remix);
+            remix();
+        </script>
+	</body>
+</html>
