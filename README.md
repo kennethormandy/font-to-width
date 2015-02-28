@@ -26,6 +26,17 @@ Freely made available under the MIT license: http://opensource.org/licenses/MIT
 * Multiple FontToWidth instances can be created using different font lists and elements.
 * Elements can be anything that is display:block or inline-block
 
+### Options
+Option Name | Description
+--------------------------
+  fonts                  |  A list of font-family names or sets of CSS style parameters
+ [elements=".ftw"]       |  A CSS selector or jQuery object specifying which elements should apply FTW
+ [minLetterSpace=-0.04]  |  A very small, probably negative number indicating degree of allowed tightening
+ [minFontSize=1.0]       |  Allow scaling of font-size to this ratio of original
+ [maxFontSize=1.0]       |  Allow scaling of font-size to this ratio of original
+ [preferredFit="tight"]  |  Whether to prefer "tight" or "loose" letterspacing
+ [preferredSize="large"] |  Whether to prefer "large" or "small" font-size
+
 ### History
 
 * 2015-02-28
