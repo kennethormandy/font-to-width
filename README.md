@@ -30,6 +30,8 @@ Freely made available under the MIT license: http://opensource.org/licenses/MIT
 
 * 2015-02-28
  * Added ability to specify complete CSS spec for each font style
+ * Added min/maxFontSize, preferredFit/Size options
+ * Added demo.html for usage hints
  * Support hyphenated-type or camelCaseType options
  * Bugfixes and safer coding style
 
