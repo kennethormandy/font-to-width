@@ -15,19 +15,36 @@
  * Freely made available under the MIT license: http://opensource.org/licenses/MIT
  * 
  * CHANGELOG:
- * 2014-03-31 Initial release: min-letter-space option; errs on the side of narrow spacing
+ * 2014-03-31 Initial release: minLetterSpace option; errs on the side of narrow spacing
  *
  */
 
-function FontToWidth(options, elements) {
-    if (elements) {
-        options = {
-            'fonts': options,
-            'elements': elements
-        };
+
+
+/**
+ * @param  options
+ * @param  options.fonts                    A list of font-family names or sets of CSS style parameters
+ * @param [options.elements=".ftw"]         A CSS selector or jQuery object specifying which elements should apply FTW
+ * @param [options.minLetterSpace=-0.04]    A very small, probably negative number indicating degree of allowed tightening
+ */
+ 
+function FontToWidth(options) {
+
+    //clean up hypenated names: min-letter space => minLetterSpace
+    $.each(options, function(key, val) {
+        var newKey = key.replace(/-([a-z])/g, function(x, letter) { return letter.toUpperCase() });
+        if (key != newKey) {
+            options[newKey] = val;
+            delete options[key];
+        }
+    });
+    
+    if (!options.fonts) return;
+    if (!options.elements) {
+        options.elements = '.ftw, .font-to-width, .fonttowidth';
     }
 
-    options['min-letter-space'] = options['min-letter-space'] || -0.04;
+    options['minLetterSpace'] = options['minLetterSpace'] || -0.04;
 
     console.log(options);
 
@@ -142,7 +159,7 @@ FontToWidth.prototype.measureFonts = function() {
 }
 
 FontToWidth.prototype.startTheBallRolling = function() {
-    widther = this;
+    var widther = this;
 
     //only do this stuff once
     if (widther.initialized)
@@ -246,7 +263,7 @@ FontToWidth.prototype.updateSingleWidth = function(i,el) {
     var letterspace = (fullwidth-textwidth)/lettercount/fontsize;
     var spaces, spacewidth;
 
-    if (letterspace >= this.options['min-letter-space']) {
+    if (letterspace >= this.options['minLetterSpace']) {
         cell.addClass('done');
         
         //adjust letter spacing to fill the width
