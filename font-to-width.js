@@ -88,20 +88,6 @@ var FontToWidth = function(options) {
     $($.proxy(this.measureFonts,this)); 
 };
 
-FontToWidth.prototype.addGoogleWebfontLoader = function() {
-    var found = false;
-    $('script').each(function() {
-        if (/google.*webfont\.js/.test(this.src)) {
-            found = true;
-            return false;
-        }
-    });
-    
-    if (!found) {
-        $('head').append("<script src='//ajax.googleapis.com/ajax/libs/webfont/1.5.2/webfont.js'></script>");
-    }
-};
-
 FontToWidth.prototype.measureFonts = function() {
     var ftw = this;
     ftw.ready = false;
@@ -245,10 +231,6 @@ FontToWidth.prototype.startTheBallRolling = function() {
     */
 };
 
-FontToWidth.prototype.resetFont = function(el,font) {
-    $(el).css({'font-family': font || this.options.fonts[0].fontFamily, 'letter-spacing': ''});
-};
-
 FontToWidth.prototype.updateWidths = function() {
     var ftw = this;
     
@@ -314,10 +296,6 @@ FontToWidth.prototype.updateSingleWidth = function(i,el) {
         cell.addClass('ftw_done');
     }
 };
-
-
-
-//FontToWidth.prototype.addGoogleWebfontLoader(); //do this ASAP
 
 window.FontToWidth = FontToWidth;
 
