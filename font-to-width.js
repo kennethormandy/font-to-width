@@ -77,6 +77,7 @@ var FontToWidth = function(options) {
     options.elements = options.elements || '.ftw, .font-to-width, .fonttowidth';
     options.minLetterSpace = options.minLetterSpace || -0.04;
 
+    this.measuringText = 'AVAWJ wimper QUILT jousting';
     this.initialized = false;
     this.integerLetterSpacing = false;
     this.ready = false;
@@ -94,11 +95,11 @@ FontToWidth.prototype.measureFonts = function() {
     ftw.ready = false;
 
     //create a hidden element to measure the relative widths of all the fonts
-    var div = ftw.measure_div = $("<div style='position:absolute;top:0px;display:block;'></div>");
+    var div = ftw.measure_div = $("<div style='position:absolute;top:0px;right:101%;display:block;white-space:nowrap;'></div>");
     div.append("<div id='ftw_measure_letter_spacing' style='letter-spacing:0.4px'></div>");
 
     $.each(ftw.options.fonts, function(i, font) {
-        var span = $('<span>AVAWJMI LT wi mj</span>');
+        var span = $('<span>' + ftw.measuringText + '</span>');
         span.css({
             'font-size': '36px',
             'display': 'inline',
