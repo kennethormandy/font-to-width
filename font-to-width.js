@@ -267,7 +267,7 @@ FontToWidth.prototype.updateWidths = function() {
         var newfontsize=fontsize, oldfontsize=fontsize, ratioToFit = fullwidth/textwidth;
         
         //for the widest font, we can max out the size
-        if (i==0 && ratioToFit > ftw.options.maxFontSize) {
+        if (cell.data('biggest-font') && ratioToFit > ftw.options.maxFontSize) {
             ratioToFit = ftw.options.maxFontSize;
         }
         
@@ -322,6 +322,7 @@ FontToWidth.prototype.updateWidths = function() {
         ftw.stillToDo.each(function() { 
             var el = $(this);
             el.attr('style', el.data('ftw-original-style'));
+            el.data('biggest-font', i==0);
             el.css(font);
         })
         // and then start measuring
