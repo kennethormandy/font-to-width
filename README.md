@@ -27,15 +27,18 @@ Freely made available under the MIT license: http://opensource.org/licenses/MIT
 * Elements can be anything that is display:block or inline-block
 
 ### Options
-Option Name | Description
---------------------------
-  fonts                  |  A list of font-family names or sets of CSS style parameters
- [elements=".ftw"]       |  A CSS selector or jQuery object specifying which elements should apply FTW
- [minLetterSpace=-0.04]  |  A very small, probably negative number indicating degree of allowed tightening
- [minFontSize=1.0]       |  Allow scaling of font-size to this ratio of original
- [maxFontSize=1.0]       |  Allow scaling of font-size to this ratio of original
- [preferredFit="tight"]  |  Whether to prefer "tight" or "loose" letterspacing
- [preferredSize="large"] |  Whether to prefer "large" or "small" font-size
+
+All options are optional except `fonts`.
+
+Name | Default | Description
+------|------|-------------
+  fonts   | Required               |  A list of font-family names or sets of CSS style parameters
+ elements|".ftw, .font-to-width, .fonttowidth"       |  A CSS selector or jQuery object specifying which elements should apply FTW
+ minLetterSpace|-0.04  |  A very small, probably negative number indicating degree of allowed tightening
+ minFontSize|1.0       |  Allow scaling of font-size to this ratio of original
+ maxFontSize|1.0       |  Allow scaling of font-size to this ratio of original
+ preferredFit|"tight"  |  Whether to prefer "tight" or "loose" letterspacing
+ preferredSize|"large" |  Whether to prefer "large" or "small" font-size
 
 ### History
 
