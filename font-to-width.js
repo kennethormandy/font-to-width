@@ -15,6 +15,7 @@
  * Freely made available under the MIT license: http://opensource.org/licenses/MIT
  * 
  * CHANGELOG:
+ * 2015-02-28 Allow arbitrary CSS styles for each font
  * 2014-03-31 Initial release: minLetterSpace option; errs on the side of narrow spacing
  *
  */
@@ -83,7 +84,7 @@ var FontToWidth = function(options) {
     this.fontwidths = new Array(options.fonts.length);
     this.allTheElements = $(options.elements);
 
-    this.allTheElements.wrapInner("<span contenteditable='false'></span>");
+    this.allTheElements.css('white-space', 'nowrap').wrapInner("<span contenteditable='false'></span>");
 
     $($.proxy(this.measureFonts,this)); 
 };
@@ -238,7 +239,7 @@ FontToWidth.prototype.updateWidths = function() {
     
     ftw.ready = false;
 
-    ftw.stillToDo = $(ftw.allTheElements).removeClass('ftw_done');
+    ftw.stillToDo = $(ftw.allTheElements).removeClass('ftw_done ftw_final');
 
     if (ftw.integerLetterSpacing)
         ftw.stillToDo.find('> span > span').css('width','');
@@ -261,6 +262,8 @@ FontToWidth.prototype.updateWidths = function() {
         }
     });
     
+    ftw.stillToDo.addClass('ftw_final').each(updateSingleWidthBound);
+    
     ftw.ready = true;
 };
 
@@ -275,21 +278,22 @@ FontToWidth.prototype.updateSingleWidth = function(i,el) {
     var fontsize = parseFloat(cell.css('font-size'));
 
     var letterspace = (fullwidth-textwidth)/lettercount/fontsize;
-    var spaces, spacewidth;
 
-    if (letterspace >= ftw.options.minLetterSpace) {
+    if (letterspace >= ftw.options.minLetterSpace || cell.hasClass('ftw_final')) {
         //adjust letter spacing to fill the width
-        cell.css('letter-spacing', letterspace + 'em');
+        cell.css('letter-spacing', Math.max(letterspace, ftw.options.minLetterSpace) + 'em');
         
         //deal with browsers (SAFARI) that only do integer-pixel letterspacing
         if (ftw.integerLetterSpacing) {
             //pump up the word space to fit the width as exactly as possible
-            spaces = span.children('span');
+            var spaces = span.children('span');
             if (spaces.length) {
                 spaces.width(0); //measure with no spaces at all
-                spacewidth = (fullwidth-span.outerWidth())/spaces.length;
+                var spacewidth = (fullwidth-span.outerWidth())/spaces.length;
                 //console.log("GOING THE DISTANCE", span.text(), span.outerWidth(), fullwidth, spacewidth);
-                spaces.width(spacewidth);
+                if (spacewidth > 0) {
+                    spaces.width(spacewidth);
+                }
             }
         }
 
