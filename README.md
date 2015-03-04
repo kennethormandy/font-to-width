@@ -22,7 +22,7 @@ Freely made available under the MIT license: http://opensource.org/licenses/MIT
 	</script>
 
 ### Notes
-
+* jQuery is required and must be present in the page before any FTW instances are created
 * Multiple FontToWidth instances can be created using different font lists and elements.
 * Elements can be anything that is display:block or inline-block
 * If no fonts are specified, behavior reverts to a simple scale-to-width system
