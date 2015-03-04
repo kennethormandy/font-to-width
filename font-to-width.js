@@ -46,13 +46,13 @@ function hyphenToCamel (hyphen) {
 
 /**
  * @param  options
- * @param  options.fonts                    A list of font-family names or sets of CSS style parameters
- * @param [options.elements=".ftw"]         A CSS selector or jQuery object specifying which elements should apply FTW
- * @param [options.minLetterSpace=-0.04]    A very small, probably negative number indicating degree of allowed tightening
- * @param [options.minFontSize=1.0]         Allow scaling of font-size to this ratio of original
- * @param [options.maxFontSize=1.0]         Allow scaling of font-size to this ratio of original
- * @param [options.preferredFit="tight"]    Whether to prefer "tight" or "loose" letterspacing
- * @param [options.preferredSize="large"]   Whether to prefer "large" or "small" font-size
+ * @param [options.fonts]						A list of font-family names or sets of CSS style parameters.
+ * @param [options.elements=".ftw"]			A CSS selector or jQuery object specifying which elements should apply FTW
+ * @param [options.minLetterSpace=-0.04]	A very small, probably negative number indicating degree of allowed tightening
+ * @param [options.minFontSize=1.0]			Allow scaling of font-size. Ratio to original font size.
+ * @param [options.maxFontSize=1.0]			Allow scaling of font-size. Ratio to original font size.
+ * @param [options.preferredFit="tight"]		Whether to prefer "tight" or "loose" letterspacing
+ * @param [options.preferredSize="large"]	Whether to prefer "large" or "small" font-size
  */
  
 var FontToWidth = function(options) {
@@ -62,27 +62,29 @@ var FontToWidth = function(options) {
         return new FontToWidth(options);
     }
 
-    if (!options.fonts) {
-        throw "Missing required options 'fonts'";
-    }
-
     //OPTIONS 
     
     //fill out fonts CSS with default settings
-    $.each(options.fonts, function(i, font) {
-        if (typeof font == "string") {
-            options.fonts[i] = font = { fontFamily: font };
-        }
-        hyphenToCamel(font);
-        font.fontWeight = font.fontWeight || 'normal';
-        font.fontStyle = font.fontStyle || 'normal';
-        if (font.fontSize) delete font.fontSize;
-    });
+    this.mode = "fonts";
+    if (!options.fonts) {
+        this.mode = "scale";
+        options.fonts = [ false ];
+    } else {
+        $.each(options.fonts, function(i, font) {
+            if (typeof font == "string") {
+                options.fonts[i] = font = { fontFamily: font };
+            }
+            hyphenToCamel(font);
+            font.fontWeight = font.fontWeight || 'normal';
+            font.fontStyle = font.fontStyle || 'normal';
+            if (font.fontSize) delete font.fontSize;
+        });
+    }
 
     options.elements = options.elements || '.ftw, .font-to-width, .fonttowidth';
     options.minLetterSpace = typeof options.minLetterSpace === "number" ? options.minLetterSpace : -0.04;
-    options.minFontSize = options.minFontSize || 1.0;
-    options.maxFontSize = options.maxFontSize || 1.0;
+    options.minFontSize = options.minFontSize || (this.mode == "scale" ? 0.01 : 1.0);
+    options.maxFontSize = options.maxFontSize || (this.mode == "scale" ? 100 : 1.0);
     options.preferredFit = options.preferredFit || "tight";
     options.preferredFit = options.preferredSize || "large";
 
@@ -106,6 +108,12 @@ var FontToWidth = function(options) {
 FontToWidth.prototype.measureFonts = function() {
     var ftw = this;
     ftw.ready = false;
+
+    if (ftw.mode == "scale") {
+        ftw.ready = true;
+        ftw.startTheBallRolling();
+        return;
+    }
 
 	//add Adobe Blank @font-face
 	$('head').append('<style id="ftw-adobe-blank">@font-face { font-family: AdobeBlank; src: url("data:application/vnd.ms-fontobject;base64,' + ftw.eotData + '") format("embedded-opentype"), url("data:application/font-woff;base64,' + ftw.woffData + '") format("woff"); }</style>');
@@ -294,7 +302,7 @@ FontToWidth.prototype.updateWidths = function() {
             textwidth *= newfontsize/fontsize;
             fontsize = newfontsize;
 
-            if (ratioToFit < ftw.options.avgFontSize) {
+            if (ftw.mode == "fonts" && ratioToFit < ftw.options.avgFontSize) {
                 if (ftw.options.preferredSize=="small") {
                     success = true;
                 } else {
@@ -312,7 +320,7 @@ FontToWidth.prototype.updateWidths = function() {
             //adjust letter spacing to fill the width
             cell.css('letter-spacing', Math.max(letterspace, ftw.options.minLetterSpace) + 'em');
 
-            if (letterspace < 0) {
+            if (ftw.mode == "fonts" && letterspace < 0) {
                 if (ftw.options.preferredFit=="tight") {
                     success = true;
                 } else {
@@ -339,7 +347,7 @@ FontToWidth.prototype.updateWidths = function() {
             var el = $(this);
             el.attr('style', el.data('ftw-original-style'));
             el.data('biggest-font', i==0);
-            el.css(font);
+            font && el.css(font);
         })
         // and then start measuring
         .each(updateSingleWidth);
@@ -353,7 +361,9 @@ FontToWidth.prototype.updateWidths = function() {
         }
     });
     
-    ftw.stillToDo.addClass('ftw_final').each(updateSingleWidth);
+    if (ftw.mode == "fonts") {
+        ftw.stillToDo.addClass('ftw_final').each(updateSingleWidth);
+    }
     
     ftw.ready = true;
     
