@@ -99,7 +99,7 @@ var FontToWidth = function(options) {
         var el = $(this);
         el.css('white-space', 'nowrap');
         el.data('ftw-original-style', el.attr('style'));
-        el.wrapInner("<span contenteditable='false'></span>");
+        el.wrapInner("<span style='display:inline !important'></span>");
     });
 
     $($.proxy(this.measureFonts,this)); 
