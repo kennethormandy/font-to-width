@@ -25,10 +25,14 @@
 (function () {
 'use strict'
 
+function forEach (val, key) {
+  return Array.prototype.forEach.call(val, key)
+}
+
 function hyphenToCamel (hyphen) {
   switch (typeof hyphen) {
   case 'object':
-    Array.prototype.forEach.call(hyphen, function (val, key) {
+    forEach(hyphen, function (val, key) {
       var newKey = hyphenToCamel(key)
       if (key != newKey) {
         hyphen[newKey] = val
@@ -70,9 +74,9 @@ var FontToWidth = function (options) {
     this.mode = 'scale'
     options.fonts = [ false ]
   } else {
-    Array.prototype.forEach.call(options.fonts, function (font, i) {
+    forEach(options.fonts, function (font, i) {
       if (typeof font == 'string') {
-        options.fonts[i] = font = { fontFamily: font }
+        options.fonts[i] = font = { fontFamily: font.fontFamily }
       }
       hyphenToCamel(font)
       font.fontWeight = font.fontWeight || 'normal'
@@ -87,7 +91,7 @@ var FontToWidth = function (options) {
   options.maxFontSize = options.maxFontSize || (this.mode == 'scale' ? 100 : 1.0)
   options.preferredFit = options.preferredFit || 'tight'
   options.preferredFit = options.preferredSize || 'large'
-  options.attempts = 10
+  options.attempts = 60
   options.debug = false
 
   this.measuringText = 'AVAWJ wimper QUILT jousting'
@@ -97,7 +101,7 @@ var FontToWidth = function (options) {
   this.fontwidths = new Array(options.fonts.length)
   this.allTheElements = document.querySelectorAll(options.elements)
 
-  Array.prototype.forEach.call(this.allTheElements, function (el) {
+  forEach(this.allTheElements, function (el) {
     var content = el.innerHTML
     var span = document.createElement('span')
     // el.wrapInner('<span style="display:inline !important;"></span>')
@@ -143,7 +147,7 @@ FontToWidth.prototype.measureFonts = function () {
   divHidden.style.whiteSpace = 'nowrap'
   ftw.measure_div = divHidden
 
-  Array.prototype.forEach.call(ftw.options.fonts, function (font, i) {
+  forEach(ftw.options.fonts, function (font, i) {
     var span = document.createElement('span')
     span.style.outline = '1px solid green'
     span.innerHTML = ftw.measuringText
@@ -189,7 +193,7 @@ FontToWidth.prototype.measureFonts = function () {
     }
 
     var allLoaded = true
-    Array.prototype.forEach.call(spans, function (span, i) {
+    forEach(spans, function (span, i) {
       // var span = $(this)
       ftw.fontwidths[i] = span.offsetWidth
       // ftw.fontwidths[i] = span.getComputedStyle().width
@@ -207,7 +211,7 @@ FontToWidth.prototype.measureFonts = function () {
 
       // Sort the font list widest first
       var font2width = new Array(ftw.options.fonts.length)
-      Array.prototype.forEach.call(ftw.fontwidths, function (mywidth, i) {
+      forEach(ftw.fontwidths, function (mywidth, i) {
         font2width[i] = {index: i, width: mywidth}
       })
 
@@ -220,7 +224,7 @@ FontToWidth.prototype.measureFonts = function () {
       })
 
       var newfonts = new Array(font2width.length)
-      Array.prototype.forEach.call(font2width, function (font, i) {
+      forEach(font2width, function (font, i) {
         newfonts[i] = ftw.options.fonts[font.index]
       })
 
@@ -236,7 +240,7 @@ FontToWidth.prototype.measureFonts = function () {
 
   //measure the initial width and then restore the font-family
   setTimeout(function () {
-    Array.prototype.forEach.call(spans, function (span, i) {
+    forEach(spans, function (span, i) {
       ftw.debug(getComputedStyle(span).fontFamily)
       // var span = $(this)
       // origwidths[i] = span.width()
@@ -310,7 +314,7 @@ FontToWidth.prototype.updateWidths = function () {
 
   // TODO Is this right?
   // ftw.stillToDo = $(ftw.allTheElements).removeClass()
-  Array.prototype.forEach.call(ftw.allTheElements, function (el, i) {
+  forEach(ftw.allTheElements, function (el, i) {
     el.classList.remove('ftw_done', 'ftw_final', 'ftw_onemore')
   })
 
@@ -400,9 +404,9 @@ FontToWidth.prototype.updateWidths = function () {
 
 
   // ftw.fonts is sorted widest first once we get to a font that fits, we remove that element from the list
-  Array.prototype.forEach.call(ftw.options.fonts, function (font, i) {
+  forEach(ftw.options.fonts, function (font, i) {
     //first go through and update all the css without reading anything
-    Array.prototype.forEach.call(ftw.stillToDo, function (el) {
+    forEach(ftw.stillToDo, function (el) {
       // var el = $(this)
       // el.attr('style', el.data('ftw-original-style'))
       el.setAttribute('style', el.getAttribute('ftw-original-style'))
@@ -419,12 +423,12 @@ FontToWidth.prototype.updateWidths = function () {
     })
 
     // And then start measuring
-    Array.prototype.forEach.call(ftw.stillToDo, updateSingleWidth)
+    forEach(ftw.stillToDo, updateSingleWidth)
 
     ftw.debug(ftw.stillToDo)
     var stillToDoList = []
 
-    Array.prototype.forEach.call(ftw.stillToDo, function (el, i) {
+    forEach(ftw.stillToDo, function (el, i) {
       if (el.classList.contains('ftw_done')) {
         return
       } else {
@@ -442,7 +446,7 @@ FontToWidth.prototype.updateWidths = function () {
   })
 
   if (ftw.mode == 'fonts') {
-    Array.prototype.forEach.call(ftw.stillToDo, function (el, i) {
+    forEach(ftw.stillToDo, function (el, i) {
       el.classList.add('ftw_final')
       updateSingleWidth(el, i)
     })
