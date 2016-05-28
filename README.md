@@ -9,7 +9,7 @@ Originally by [Chris Lewis](http://chrissam42.com/) & [Nick Sherman](http://nick
 To install the module through [npm](https://npmjs.org), run the following command:
 
 ```sh
-npm install --save font-to-width
+npm install --save @kennethormandy/font-to-width
 ```
 
 Then, within your project, require Font to Width:
