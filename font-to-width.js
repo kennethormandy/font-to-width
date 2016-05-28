@@ -154,7 +154,9 @@ FontToWidth.prototype.measureFonts = function () {
     font.style = font
 
     //first load up a default font
-    span.setAttribute('font-family', span.style.fontFamily)
+    // TODO Fix this, loads empty string instead of default font
+    // span.setAttribute('font-family', span.style.fontFamily)
+    span.setAttribute('font-family', 'Hardware Regular')
     // span.data('font-family', span.css('font-family'))
     // span.css('font-family', 'AdobeBlank')
     span.style.fontFamily = 'AdobeBlank'
@@ -180,8 +182,8 @@ FontToWidth.prototype.measureFonts = function () {
     if (--tries < 0) {
       console.log('Giving up!')
       clearInterval(ftw.measuretimeout)
-      var el = document.getElementById('ftw-adobe-blank')
-      el.parentNode.removeChild(el)
+      var elBlank = document.getElementById('ftw-adobe-blank')
+      elBlank.parentNode.removeChild(elBlank)
       return
     }
 
@@ -234,6 +236,7 @@ FontToWidth.prototype.measureFonts = function () {
   //measure the initial width and then restore the font-family
   setTimeout(function () {
     Array.prototype.forEach.call(spans, function (span, i) {
+      console.log(getComputedStyle(span).fontFamily)
       // var span = $(this)
       // origwidths[i] = span.width()
       origwidths[i] = span.offsetWidth
@@ -302,22 +305,36 @@ FontToWidth.prototype.updateWidths = function () {
 
   ftw.ready = false
 
-  ftw.stillToDo = $(ftw.allTheElements).removeClass('ftw_done ftw_final ftw_onemore')
+  Array.prototype.forEach.call(ftw.allTheElements, function (el, i) {
+    el.classList.remove('ftw_done', 'ftw_final', 'ftw_onemore')
+  })
+
+  // TODO Is this right?
+  ftw.stillToDo = ftw.allTheElements
+
+  // ftw.stillToDo = $().removeClass()
 
   //doing this in waves is much faster, since we update all the fonts at once, then do only one repaint per font
   // as opposed to one repaint for every element
 
-  var updateSingleWidth = function (i, el) {
-    var cell = $(el)
-    var span = cell.children('span')
+  var updateSingleWidth = function (el, i) {
+    // var cell = $(el)
+    var cell = el
+    var span = cell.querySelector('span')
 
-    var ontrial = cell.hasClass('ftw_onemore')
+    // var ontrial = cell.hasClass('ftw_onemore')
+    var ontrial = cell.classList.contains('ftw_onemore')
     var success = false
 
-    var fullwidth = cell.width()
-    var textwidth = span.outerWidth()
-    var lettercount = span.text().length-1 //this will probably get confused with fancy unicode text
-    var fontsize = parseFloat(cell.css('font-size'))
+    // var fullwidth = cell.width()
+    var fullwidth = cell.offsetWidth
+
+    // var textwidth = span.outerWidth()
+    var textwidth = span.offsetWidth
+
+    var lettercount = span.textContent.length-1 //this will probably get confused with fancy unicode text
+    // var fontsize = parseFloat(cell.css('font-size'))
+    var fontsize = parseFloat(parseInt(getComputedStyle(cell).fontSize, 10))
 
     //if this is a borderline fit
     var onemore = false
@@ -326,14 +343,17 @@ FontToWidth.prototype.updateWidths = function () {
     var newfontsize=fontsize, oldfontsize=fontsize, ratioToFit = fullwidth/textwidth
 
     // For the widest font, we can max out the size
-    if (cell.data('biggest-font') && ratioToFit > ftw.options.maxFontSize) {
+    if (cell.getAttribute('biggest-font') && ratioToFit > ftw.options.maxFontSize) {
       ratioToFit = ftw.options.maxFontSize
     }
 
     if (ratioToFit != 1 && ratioToFit >= ftw.options.minFontSize && ratioToFit <= ftw.options.maxFontSize) {
       // Adjust the font size and then nudge letterspacing on top of that
       newfontsize = Math.round(fontsize * ratioToFit)
-      cell.css('font-size', newfontsize + 'px')
+
+      // cell.css('font-size', newfontsize + 'px')
+      cell.style.fontSize = newfontsize + 'px'
+
       textwidth *= newfontsize/fontsize
       fontsize = newfontsize
 
@@ -352,8 +372,10 @@ FontToWidth.prototype.updateWidths = function () {
     var letterspace = (fullwidth-textwidth)/lettercount/fontsize
 
     if (letterspace >= ftw.options.minLetterSpace || newfontsize != oldfontsize || cell.hasClass('ftw_final')) {
+
       // Adjust letter spacing to fill the width
-      cell.css('letter-spacing', Math.max(letterspace, ftw.options.minLetterSpace) + 'em')
+      // cell.css('letter-spacing', Math.max(letterspace, ftw.options.minLetterSpace) + 'em')
+      cell.style.letterSpacing = Math.max(letterspace, ftw.options.minLetterSpace) + 'em'
 
       if (ftw.mode == 'fonts' && letterspace < 0) {
         if (ftw.options.preferredFit=='tight') {
@@ -368,9 +390,9 @@ FontToWidth.prototype.updateWidths = function () {
     }
 
     if (onemore) {
-      cell.addClass('ftw_onemore')
+      cell.classList.add('ftw_onemore')
     } else if (ontrial || success) {
-      cell.addClass('ftw_done')
+      cell.classList.add('ftw_done')
     }
   }
 
@@ -380,14 +402,30 @@ FontToWidth.prototype.updateWidths = function () {
     //first go through and update all the css without reading anything
     Array.prototype.forEach.call(ftw.stillToDo, function (el) {
       // var el = $(this)
-      el.attr('style', el.data('ftw-original-style'))
-      el.data('biggest-font', i==0)
-      font && el.css(font)
+      // el.attr('style', el.data('ftw-original-style'))
+      el.setAttribute('style', el.getAttribute('ftw-original-style'))
+
+      el.setAttribute('biggest-font', i==0)
+      // el.data('biggest-font', i==0)
+
+      // font && el.css(font)
+      font && (el.style = font)
     })
     // And then start measuring
-    .each(updateSingleWidth)
+    Array.prototype.forEach.call(ftw.stillToDo, updateSingleWidth)
 
-    ftw.stillToDo = ftw.stillToDo.not('.ftw_done')
+    console.log(ftw.stillToDo)
+    var stillToDoList = []
+
+    Array.prototype.forEach.call(ftw.stillToDo, function (el, i) {
+      if (el.classList.contains('ftw_done')) {
+        return
+      } else {
+        return stillToDoList.push(el)
+      }
+    })
+
+    ftw.stillToDo = stillToDoList
 
     console.log(font, ftw.stillToDo.length + ' left.')
 
@@ -397,7 +435,10 @@ FontToWidth.prototype.updateWidths = function () {
   })
 
   if (ftw.mode == 'fonts') {
-    ftw.stillToDo.addClass('ftw_final').each(updateSingleWidth)
+    Array.prototype.forEach.call(ftw.stillToDo, function (el, i) {
+      el.classList.add('ftw_final')
+      updateSingleWidth(el, i)
+    })
   }
 
   ftw.ready = true
