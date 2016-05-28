@@ -15,7 +15,13 @@ npm install --save @kennethormandy/font-to-width
 Then, within your project, require Font to Width:
 
 ```js
-var FontToWidth = require('font-to-width')
+var FontToWidth = require('@kennethormandy/font-to-width')
+```
+
+Or, if you’re using ES6/2015/whatever:
+
+```js
+import FontToWidth from '@kennethormandy/font-to-width'
 
 var ftw = new FontToWidth({
 	elements: '.js-ftw', // The class name to apply Font to Width to
