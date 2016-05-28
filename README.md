@@ -1,16 +1,13 @@
 # Font-To-Width FTW
 
-Font-To-Width if a small Javascript routine which fits text to the width of an element 
-using multiple font styles of different widths.
+Font-To-Width is a small JavaScript routine which fits text to the width of an element using multiple font styles of different widths.
 
-© 2014–2015 [Chris Lewis] and [Nick Sherman]
-
-Freely made available under the MIT license: http://opensource.org/licenses/MIT
+Originally by [Chris Lewis](http://chrissam42.com/) & [Nick Sherman](http://nicksherman.com/), this version has been modified by [Kenneth Ormandy](http://kennethormandy.com) to remove the dependency on jQuery.
 
 ### Usage
 
 	<div class="ftw">Text To Fit</div>
-	<script> 
+	<script>
 		new FontToWidth({
 			fonts: [
 				'Font Family Name String',
@@ -18,14 +15,14 @@ Freely made available under the MIT license: http://opensource.org/licenses/MIT
 				…
 			];
 			elements: ".ftw, .css-selector-or-jQuery-object"
-		}); 
+		});
 	</script>
 
 ### Notes
-* jQuery is required and must be present in the page before any FTW instances are created
+* ~~jQuery is required and must be present in the page before any FTW instances are created~~ The jQuery dependency has been removed from this version.
 * Multiple FontToWidth instances can be created using different font lists and elements.
-* Elements can be anything that is display:block or inline-block
-* If no fonts are specified, behavior reverts to a simple scale-to-width system
+* Elements can be anything that is `display: block` or `inline-block`
+* If no fonts are specified, behaviour reverts to a simple scale-to-width system
 
 ### Options
 
@@ -43,8 +40,12 @@ Name            | Default                               | Description
 
 ### History
 
+* 2016-05-23
+ * Removed jQuery dependency
+ * Exported for module systems (Browserify, Webpack, etc.)
+
 * 2015-03-04
- * Added no-fonts scale-to-width behavior
+ * Added no-fonts scale-to-width behaviour
 
 * 2015-02-28
  * Added ability to specify complete CSS spec for each font style
@@ -57,6 +58,9 @@ Name            | Default                               | Description
  * Only option is 'min-letter-space'
  * Fitting errs on the side of tight spacing
 
+## License
 
-[Chris Lewis]: http://chrissam42.com/
-[Nick Sherman]: http://nicksherman.com/
+[The MIT License (MIT)](LICENSE.md)
+
+Copyright © 2016 [Kenneth Ormandy](http://kennethormandy.com)<br />
+Copyright © 2014–2015 [Chris Lewis](http://chrissam42.com/) and [Nick Sherman](http://nicksherman.com/)
