@@ -5,13 +5,34 @@
 		<meta name="viewport" content="initial-scale=1">
 		<title>Font-To-Width Demo</title>
 		<!-- A set of Google Fonts in various widths -->
-		<link href='http://fonts.googleapis.com/css?family=Arvo:700|Wire+One|Bitter|Holtwood+One+SC|Ubuntu+Condensed|Krona+One|Dorsa|Yanone+Kaffeesatz:700,300,400,200|Six+Caps|Roboto+Condensed' rel='stylesheet' type='text/css'>		
+		<!-- <link href='http://fonts.googleapis.com/css?family=Arvo:700|Wire+One|Bitter|Holtwood+One+SC|Ubuntu+Condensed|Krona+One|Dorsa|Yanone+Kaffeesatz:700,300,400,200|Six+Caps|Roboto+Condensed' rel='stylesheet' type='text/css'> -->
 		<style>
+			@font-face {
+				font-family: "Hardware Regular";
+				font-style: normal;
+				font-weight: normal;
+				src: url('/fonts/Hardware-Regular.woff') format('woff');
+			}
+
+			@font-face {
+				font-family: "Hardware Condensed";
+				font-style: normal;
+				font-weight: normal;
+				src: url('/fonts/Hardware-Condensed.woff') format('woff');
+			}
+
+			@font-face {
+				font-family: "Hardware Compressed";
+				font-style: normal;
+				font-weight: normal;
+				src: url('/fonts/Hardware-Compressed.woff') format('woff');
+			}
+
 			body {
 				font-size: 16px;
 				margin: 1em;
 				background-color: white;
-				font-family: Verdana, sans-serif;
+				font-family: "Hardware Regular", Verdana, sans-serif;
 			}
 			label {
     			display: inline-block;
@@ -22,11 +43,11 @@
     			display: inline-block;
     			margin-bottom: 1em;
             }
-                        
+
             fieldset label {
                 display: inline;
             }
-            
+
 			ul, li {
 				list-style: none;
 				margin: 0;
@@ -35,29 +56,33 @@
 			li {
     			font-size: 72px;
             }
-            
+
             ul.stw {
-                font-family: Impact, Courier, "Courier New";
+                font-family: "Hardware Regular", Impact, Courier, "Courier New";
             }
 		</style>
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 		<script src="font-to-width.js"></script>
 		<script>
 			var fonts = [
-				{ fontFamily: 'Arvo', 'font-weight': 700 },
-				'Wire One',
-				'Bitter',
-				'Holtwood One SC',
-				'Ubuntu Condensed',
-				'Krona One',
-				'Dorsa',
-				{ fontFamily: 'Yanone Kaffeesatz', 'font-weight': 700 },
-				{ fontFamily: 'Yanone Kaffeesatz', 'font-weight': 300 },
-				{ fontFamily: 'Yanone Kaffeesatz', 'font-weight': 400 },
-				{ fontFamily: 'Yanone Kaffeesatz', 'font-weight': 200 },
-				{ fontFamily: 'Six Caps' },
-				{ fontFamily: 'Roboto Condensed' },
-			];
+				{ fontFamily: 'Hardware Regular' },
+				{ fontFamily: 'Hardware Condensed' },
+				{ fontFamily: 'Hardware Compressed' }
+
+				// { fontFamily: 'Arvo', 'font-weight': 700 },
+				// 'Wire One',
+				// 'Bitter',
+				// 'Holtwood One SC',
+				// 'Ubuntu Condensed',
+				// 'Krona One',
+				// 'Dorsa',
+				// { fontFamily: 'Yanone Kaffeesatz', 'font-weight': 700 },
+				// { fontFamily: 'Yanone Kaffeesatz', 'font-weight': 300 },
+				// { fontFamily: 'Yanone Kaffeesatz', 'font-weight': 400 },
+				// { fontFamily: 'Yanone Kaffeesatz', 'font-weight': 200 },
+				// { fontFamily: 'Six Caps' },
+				// { fontFamily: 'Roboto Condensed' },
+			]
 		</script>
 	</head>
 	<body>
@@ -75,7 +100,7 @@
             <li>Four score and seven years ago, our fathers brought</li>
             <li>Four score and seven years ago, our fathers brought forth</li>
         </ul>
-        
+
     	<h2>Font to Width</h2>
         <form>
             <label>Allow shrink <input type='range' name='minFontSize' min='0.5' max='1.0' step='0.01' value='1.0'></label>
@@ -104,24 +129,24 @@
             <li>Four score and seven years ago, our fathers brought</li>
             <li>Four score and seven years ago, our fathers brought forth</li>
 		</ul>
-		
+
 		<script>
-    		var ftw = new FontToWidth({
-        		elements:'ul.ftw li', 
-        		fonts: fonts
-            });
-            
-            var stw = new FontToWidth({elements: 'ul.stw li'});
-            
-            var remix = function() {
-                $.each($('form').serializeArray(), function(i, item) {
-                    ftw.options[item.name] = parseFloat(item.value) || item.value;
-                });
-                ftw.updateWidths();
-            };
-            
-            $('input').on('change', remix);
-            remix();
-        </script>
+			var ftw = new FontToWidth({
+	  		elements:'ul.ftw li',
+	  		fonts: fonts
+	    });
+
+	    // var stw = new FontToWidth({elements: 'ul.stw li'});
+	    //
+	    // var remix = function() {
+	    //   $.each($('form').serializeArray(), function(i, item) {
+	    //     ftw.options[item.name] = parseFloat(item.value) || item.value;
+	    //   });
+		  //   ftw.updateWidths();
+	    // };
+	    //
+	    // $('input').on('change', remix);
+	    // remix();
+    </script>
 	</body>
 </html>
