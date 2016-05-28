@@ -4,7 +4,38 @@ Font-To-Width is a small JavaScript routine which fits text to the width of an e
 
 Originally by [Chris Lewis](http://chrissam42.com/) & [Nick Sherman](http://nicksherman.com/), this version has been modified by [Kenneth Ormandy](http://kennethormandy.com) to remove the dependency on jQuery.
 
-### Usage
+## Install
+
+To install the module through [npm](https://npmjs.org), run the following command:
+
+```sh
+npm install --save font-to-width
+```
+
+Then, within your project, require Font to Width:
+
+```js
+var FontToWidth = require('font-to-width')
+
+var ftw = new FontToWidth({
+	elements: '.js-ftw', // The class name to apply Font to Width to
+	fonts: [
+		{ fontFamily: 'Hardware Regular' },
+		{ fontFamily: 'Hardware Condensed' },
+		{ fontFamily: 'Hardware Compressed' }
+	]
+})
+```
+
+Alternatively, you can include the [font-to-width](/font-to-width.js) file in your build process manually, or even reference the file directly:
+
+```html
+<script src="https://cdn.rawgit.com/kennethormandy/font-to-width/master/font-to-width.js"></script>
+```
+
+Note you’ll probably want to replace `master` with a specific version number if you take this approach
+
+## Usage
 
 	<div class="ftw">Text To Fit</div>
 	<script>
@@ -19,6 +50,7 @@ Originally by [Chris Lewis](http://chrissam42.com/) & [Nick Sherman](http://nick
 	</script>
 
 ### Notes
+
 * ~~jQuery is required and must be present in the page before any FTW instances are created~~ The jQuery dependency has been removed from this version.
 * Multiple FontToWidth instances can be created using different font lists and elements.
 * Elements can be anything that is `display: block` or `inline-block`
@@ -38,7 +70,7 @@ Name            | Default                               | Description
  preferredFit   | "tight"                               |  Whether to prefer "tight" or "loose" letterspacing
  preferredSize  | "large"                               |  Whether to prefer "large" or "small" font-size
 
-### History
+## History
 
 * 2016-05-23
  * Removed jQuery dependency
