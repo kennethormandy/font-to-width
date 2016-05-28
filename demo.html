@@ -61,7 +61,7 @@
                 font-family: "Hardware Regular", Impact, Courier, "Courier New";
             }
 		</style>
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+		<!-- <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script> -->
 		<script src="font-to-width.js"></script>
 		<script>
 			var fonts = [
@@ -102,51 +102,66 @@
         </ul>
 
     	<h2>Font to Width</h2>
-        <form>
-            <label>Allow shrink <input type='range' name='minFontSize' min='0.5' max='1.0' step='0.01' value='1.0'></label>
-            <label>Allow grow <input type='range' name='maxFontSize' min='1.0' max='2.0' step='0.02' value='1.0'></label>
-            <br>
-            <fieldset>
-                <legend>Preferred fit</legend>
-                <label><input type='radio' name='preferredFit' value='tight' checked> Tight</label>
-                <label><input type='radio' name='preferredFit' value='loose'> Loose</label>
-            </fieldset>
-            <fieldset>
-                <legend>Preferred Size</legend>
-                <label><input type='radio' name='preferredSize' value='large' checked> Large</label>
-                <label><input type='radio' name='preferredSize' value='small'> Small</label>
-            </fieldset>
-        </form>
+      <form>
+        <label>Allow shrink <input type="range" name="minFontSize" min="0.5" max="1.0" step="0.01" value="1.0"></label>
+        <label>Allow grow <input type="range" name="maxFontSize" min="1.0" max="2.0" step="0.02" value="1.0"></label>
+        <br>
+        <fieldset>
+          <legend>Preferred fit</legend>
+          <label><input type="radio" name="preferredFit" value="tight" checked> Tight</label>
+          <label><input type="radio" name="preferredFit" value="loose"> Loose</label>
+        </fieldset>
+        <fieldset>
+          <legend>Preferred size</legend>
+          <label><input type="radio" name="preferredSize" value="large" checked> Large</label>
+          <label><input type="radio" name="preferredSize" value="small"> Small</label>
+        </fieldset>
+      </form>
 		<ul class="ftw">
-            <li>Four</li>
-            <li>Four score</li>
-            <li>Four score and</li>
-            <li>Four score and seven</li>
-            <li>Four score and seven years</li>
-            <li>Four score and seven years ago</li>
-            <li>Four score and seven years ago, our</li>
-            <li>Four score and seven years ago, our fathers</li>
-            <li>Four score and seven years ago, our fathers brought</li>
-            <li>Four score and seven years ago, our fathers brought forth</li>
+	    <li>Four</li>
+	    <li>Four score</li>
+	    <li>Four score and</li>
+	    <li>Four score and seven</li>
+	    <li>Four score and seven years</li>
+	    <li>Four score and seven years ago</li>
+	    <li>Four score and seven years ago, our</li>
+	    <li>Four score and seven years ago, our fathers</li>
+	    <li>Four score and seven years ago, our fathers brought</li>
+	    <li>Four score and seven years ago, our fathers brought forth</li>
 		</ul>
 
 		<script>
 			var ftw = new FontToWidth({
-	  		elements:'ul.ftw li',
+	  		elements: 'ul.ftw li',
 	  		fonts: fonts
-	    });
+	    })
 
-	    // var stw = new FontToWidth({elements: 'ul.stw li'});
-	    //
-	    // var remix = function() {
-	    //   $.each($('form').serializeArray(), function(i, item) {
-	    //     ftw.options[item.name] = parseFloat(item.value) || item.value;
-	    //   });
-		  //   ftw.updateWidths();
-	    // };
-	    //
-	    // $('input').on('change', remix);
-	    // remix();
+	    var stw = new FontToWidth({
+				elements: 'ul.stw li'
+			})
+
+			var forEach = function (val, i) {
+				return Array.prototype.forEach.call(val, i)
+			}
+
+			var inputs = document.querySelectorAll('input')
+
+	    var remix = function () {
+	      forEach(inputs, function(item, i) {
+					if (item.checked === true) {
+						ftw.options[item.name] = item.value
+					} else if (typeof item.value === 'number') {
+						ftw.options[item.name] = parseFloat(item.value)
+					}
+	      })
+		    ftw.updateWidths(ftw.options)
+	    }
+
+			// $('input').on('change', remix)
+			forEach(document.getElementsByTagName('input'), function (el, i) {
+				el.addEventListener('change', remix)
+			})
+	    remix()
     </script>
 	</body>
 </html>
