@@ -1,0 +1,10 @@
+{
+  "name": "font-to-width",
+  "version": "v0.4.0",
+  "description": "Font-To-Width is a small JavaScript routine which fits text to the width of an element using multiple font styles of different widths.",
+  "author": [
+    "Chris Lewis (http://chrissam42.com/)",
+    "Nick Sherman (http://nicksherman.com/)",
+    "Kenneth Ormandy <hello@kennethormandy.com> (http://kennethormandy.com)"
+  ]
+}
