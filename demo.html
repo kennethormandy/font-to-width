@@ -131,13 +131,15 @@
 		</ul>
 
 		<script>
-			var ftw = new FontToWidth({
-	  		elements: 'ul.ftw li',
-	  		fonts: fonts
-	    })
+			var demo2 = document.querySelectorAll('.ftw li')
 
 	    var stw = new FontToWidth({
-				elements: 'ul.stw li'
+				elements: '.stw li'
+			})
+
+			var ftw = new FontToWidth({
+				elements: demo2,
+				fonts: fonts
 			})
 
 			var forEach = function (val, i) {

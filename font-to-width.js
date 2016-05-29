@@ -17,6 +17,7 @@
  * Freely made available under the MIT license: http://opensource.org/licenses/MIT
  *
  * CHANGELOG:
+ * 2016-05-29 Can also pass node list to `elements`
  * 2016-05-28 Remove jQuery dependency
  * 2015-02-28 Allow arbitrary CSS styles for each font
  * 2014-03-31 Initial release: minLetterSpace option; errs on the side of narrow spacing

@@ -23,13 +23,15 @@ Or, if you’re using ES6/2015/whatever:
 ```js
 import FontToWidth from '@kennethormandy/font-to-width'
 
+var els = document.querySelectorAll('.js-ftw')
+
 var ftw = new FontToWidth({
-	elements: '.js-ftw', // The class name to apply Font to Width to
-	fonts: [
-		{ fontFamily: 'Hardware Regular' },
-		{ fontFamily: 'Hardware Condensed' },
-		{ fontFamily: 'Hardware Compressed' }
-	]
+  elements: els,
+  fonts: [
+    { fontFamily: 'Hardware Regular' },
+    { fontFamily: 'Hardware Condensed' },
+    { fontFamily: 'Hardware Compressed' }
+  ]
 })
 ```
 
@@ -43,17 +45,23 @@ Note you’ll probably want to replace `master` with a specific version number i
 
 ## Usage
 
-	<div class="ftw">Text To Fit</div>
-	<script>
-		new FontToWidth({
-			fonts: [
-				'Font Family Name String',
-				{ fontFamily: 'Complete CSS Spec', fontWeight: 'normal', fontStyle: 'italic' },
-				…
-			];
-			elements: ".ftw, .css-selector-or-jQuery-object"
-		});
-	</script>
+```html
+<div class="js-ftw">Text To Fit</div>
+<script>
+new FontToWidth({
+  fonts: [
+    'Font Family Name String',
+    {
+      fontFamily: 'Complete CSS Spec',
+      fontWeight: 'normal',
+      fontStyle: 'italic'
+    },
+    // …
+  ],
+  elements: '.js-ftw' // CSS selector or node list
+})
+</script>
+```
 
 ### Notes
 
@@ -78,7 +86,10 @@ Name            | Default                               | Description
 
 ## History
 
-* 2016-05-23
+* 2016-05-29
+  * Adds option to pass node list to `elements`
+
+* 2016-05-28
  * Removed jQuery dependency
  * Exported for module systems (Browserify, Webpack, etc.)
 
