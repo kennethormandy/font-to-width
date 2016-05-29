@@ -86,7 +86,12 @@ var FontToWidth = function (options) {
     })
   }
 
-  options.elements = options.elements || '.ftw, .font-to-width, .fonttowidth'
+  if (typeof options.elements === 'string') {
+    options.elements = document.querySelectorAll(options.elements)
+  } else if (typeof options.elements === 'undefined') {
+    options.elements = '.ftw, .font-to-width, .fonttowidth'
+  }
+
   options.minLetterSpace = typeof options.minLetterSpace === 'number' ? options.minLetterSpace : -0.04
   options.minFontSize = options.minFontSize || (this.mode == 'scale' ? 0.01 : 1.0)
   options.maxFontSize = options.maxFontSize || (this.mode == 'scale' ? 100 : 1.0)
@@ -100,7 +105,7 @@ var FontToWidth = function (options) {
   this.ready = false
   this.options = options
   this.fontwidths = new Array(options.fonts.length)
-  this.allTheElements = document.querySelectorAll(options.elements)
+  this.allTheElements = options.elements
 
   forEach(this.allTheElements, function (el) {
     var content = el.innerHTML
