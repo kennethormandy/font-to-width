@@ -1,6 +1,6 @@
 /*
  * FONT-TO-WIDTH FTW (Vanilla JavaScript)
- * v0.4.0
+ * v0.5.0
  *
  * Fits text to the width of an element using multiple font families of different widths.
  *
