@@ -1,6 +1,6 @@
 # Font-To-Width FTW
 
-Font-To-Width is a small JavaScript routine which fits text to the width of an element using multiple font styles of different widths.
+[Font-To-Width](http://font-to-width.kennethormandy.com/) uses JavaScript to automatically choses a typeface width, so the content fits.
 
 Originally by [Chris Lewis](http://chrissam42.com/) & [Nick Sherman](http://nicksherman.com/), this version has been modified by [Kenneth Ormandy](http://kennethormandy.com) to remove the dependency on jQuery.
 
@@ -35,13 +35,11 @@ var ftw = new FontToWidth({
 })
 ```
 
-Alternatively, you can include the [font-to-width](/font-to-width.js) file in your build process manually, or even reference the file directly:
+If you’re not using a build process or just want to try the script out, you can also reference `latest` version of the `font-to-width.js` file directly:
 
 ```html
-<script src="https://cdn.rawgit.com/kennethormandy/font-to-width/master/font-to-width.js"></script>
+<script src="https://unpkg.com/@kennethormandy/font-to-width@latest/font-to-width.js"></script>
 ```
-
-Note you’ll probably want to replace `master` with a specific version number if you take this approach
 
 ## Usage
 
